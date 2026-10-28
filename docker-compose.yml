@@ -1,0 +1,11 @@
+services:
+  analysis:
+    build: .
+    image: music-gen-eval:latest
+    container_name: music-gen-eval
+    volumes:
+      # Sincroniza a pasta data para que arquivos gerados fiquem salvos no host
+      - ./data:/app/data
+    environment:
+      - LANG=C.UTF-8
+      - LC_ALL=C.UTF-8

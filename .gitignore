@@ -1,0 +1,34 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# R
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+Rplots.pdf
+.Renviron
+
+# renv (ignora os pacotes baixados na biblioteca local, mas mantém a infraestrutura e renv.lock)
+renv/library/
+renv/sandbox/
+renv/staging/
+renv/local/
+renv/cellar/
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

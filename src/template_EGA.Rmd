@@ -1,0 +1,262 @@
+---
+title: "Análise de Dimensionalidade de EGA - `r toupper(params$modelo_nome)`"
+author: "Frederico Pedrosa"
+date: "`r Sys.Date()`"
+params:
+  modelo_nome: "minilm"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: show
+    theme: cosmo
+    highlight: tango
+  pdf_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+    latex_engine: xelatex  
+header-includes:
+  - \usepackage{placeins} 
+---
+
+# 1. Introdução e Configurações
+
+Este relatório documenta o processo iterativo de **Análise de Rede Exploratória (EGA)** aplicado às métricas de avaliação de música por IA para o modelo de embeddings: **`r toupper(params$modelo_nome)`**.
+
+## Setup de Pacotes
+
+```{r setup, message=FALSE, warning=FALSE}
+# error = TRUE garante que o RMarkdown gera o relatório HTML mesmo se houver avisos
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, error = TRUE, fig.width = 9, fig.height = 7)
+
+pacotes <- c("EGAnet", "ggplot2", "writexl", "rmarkdown")
+novos_pacotes <- pacotes[!(pacotes %in% installed.packages()[,"Package"])]
+if(length(novos_pacotes)) install.packages(novos_pacotes)
+
+library(EGAnet)
+library(ggplot2)
+library(writexl)
+```
+
+## Carregamento de Dados
+
+```{r carregar_dados}
+nome_modelo <- params$modelo_nome
+arquivo_embeddings <- paste0("questions_embeddings_", nome_modelo, ".csv")
+
+# 1. Carregar matriz de embeddings do modelo específico e transpor
+matriz_emb <- read.csv(arquivo_embeddings)
+matriz_emb_t <- t(matriz_emb)
+
+# 2. Carregar a tabela com os textos dos itens
+textos_originais <- read.csv("tabela_textos_itens.csv")
+
+cat(paste0(" Arquivos do modelo [", toupper(nome_modelo), "] carregados com sucesso!\n"))
+cat("- Matriz de embeddings transposta:", nrow(matriz_emb_t), "dimensões x", ncol(matriz_emb_t), "itens.\n")
+cat("- Tabela de textos originais:", nrow(textos_originais), "itens cadastrados.\n")
+```
+
+# 2. Loop de Purificação Iterativa (EGA + UVA)
+
+```{r loop_purificacao}
+corte_estabilidade <- 0.75
+max_iteracoes <- 10
+
+arquivo_checkpoint <- paste0("checkpoint_", nome_modelo, ".rds")
+
+# 1. Carregar Checkpoint se existir
+if (file.exists(arquivo_checkpoint)) {
+  cat(paste0(" Restauração detectada! Carregando progresso salvo para: ", toupper(nome_modelo), "...\n"))
+  cp <- readRDS(arquivo_checkpoint)
+  dados_atuais         <- cp$dados_atuais
+  historico_exclusoes <- cp$historico_exclusoes
+  modelos_boot        <- cp$modelos_boot
+  modelos_uva         <- cp$modelos_uva
+  iteracao            <- cp$iteracao
+  cat(paste0(" Retomando diretamente a partir da RODADA ", iteracao, "!\n\n"))
+} else {
+  dados_atuais         <- matriz_emb_t
+  historico_exclusoes <- list()
+  modelos_boot        <- list()
+  modelos_uva         <- list()
+  iteracao            <- 1
+}
+
+convergido <- FALSE
+
+while (!convergido && iteracao <= max_iteracoes) {
+  
+  cat(paste0("\n-------------------------------------------------------\n"))
+  cat(paste0(">>> RODADA ", iteracao, " - Modelo: ", toupper(nome_modelo), " <<<\n"))
+  cat(paste0("-------------------------------------------------------\n"))
+  
+  sucesso_iteracao <- tryCatch({
+    
+    # A. Análise de Redundância (UVA)
+    uva_atual <- UVA(dados_atuais)
+    modelos_uva[[iteracao]] <- uva_atual
+    
+    # Trava de Segurança contra objetos nulos
+    if (!is.null(uva_atual$reduced_data) && ncol(uva_atual$reduced_data) > 0) {
+      dados_para_boot <- as.data.frame(uva_atual$reduced_data)
+    } else {
+      dados_para_boot <- as.data.frame(dados_atuais)
+    }
+    
+    # B. Estimativa de Rede Bootstrap (bootEGA) - ncores = 1 garante estabilidade no Windows
+    boot_atual <- bootEGA(dados_para_boot, seed = 123)
+    modelos_boot[[iteracao]] <- boot_atual
+    
+    # C. Salvar e Renderizar Gráfico
+    nome_imagem <- paste0("bootEGA_", nome_modelo, "_rodada_", iteracao, ".png")
+    grafico_rede <- plot(boot_atual)
+    ggsave(nome_imagem, plot = grafico_rede, width = 9, height = 7, dpi = 300)
+    print(grafico_rede)
+    
+    # D. Cálculo da Estabilidade
+    estab_obj <- itemStability(boot_atual)
+    taxas_replicacao <- estab_obj$item.stability$empirical.dimensions
+    
+    # E. Itens Mantidos x Removidos
+    itens_manter  <- names(taxas_replicacao[taxas_replicacao >= corte_estabilidade])
+    itens_remover <- names(taxas_replicacao[taxas_replicacao < corte_estabilidade])
+    
+    # F. Registra no Histórico
+    historico_exclusoes[[paste0("Rodada_", iteracao)]] <- list(
+      boot = boot_atual,
+      itens_removidos = itens_remover,
+      qtd_removidos   = length(itens_remover),
+      qtd_mantidos    = length(itens_manter)
+    )
+    
+    cat(paste0("\n- **Itens Mantidos (>= 75%):** ", length(itens_manter), "\n"))
+    cat(paste0("- **Itens Excluídos (< 75%):** ", length(itens_remover), "\n\n"))
+    
+    # G. Teste de Convergência Absoluta
+    if (length(itens_remover) == 0) {
+      cat("** CONVERGÊNCIA ALCANÇADA! Todos os itens restantes são estáveis.**\n\n")
+      convergido <<- TRUE
+      if (file.exists(arquivo_checkpoint)) file.remove(arquivo_checkpoint)
+    } else {
+      # FILTRO POR NOME REAL DA COLUNA (Evita erros de posições numéricas desalinhadas)
+      colunas_existentes <- intersect(itens_manter, colnames(dados_para_boot))
+      
+      if (length(colunas_existentes) < 2) {
+        cat("** PARADA: Restaram menos de 2 itens. Não é possível formar uma rede.**\n\n")
+        convergido <<- TRUE
+        if (file.exists(arquivo_checkpoint)) file.remove(arquivo_checkpoint)
+      } else {
+        # drop = FALSE impede o R de converter uma matriz de 1 coluna em um vetor 1D
+        dados_atuais <<- dados_para_boot[, colunas_existentes, drop = FALSE]
+        
+        saveRDS(list(
+          dados_atuais         = dados_atuais,
+          historico_exclusoes = historico_exclusoes,
+          modelos_boot        = modelos_boot,
+          modelos_uva         = modelos_uva,
+          iteracao            = iteracao + 1
+        ), file = arquivo_checkpoint)
+        
+        iteracao <<- iteracao + 1
+      }
+    }
+    
+    TRUE
+    
+  }, error = function(e) {
+    cat(paste0("\n ERRO CAPTURADO NA RODADA ", iteracao, ":\n"))
+    cat(conditionMessage(e), "\n\n")
+    convergido <<- TRUE
+    FALSE
+  })
+  
+  if (isFALSE(sucesso_iteracao)) break
+}
+```
+
+# 3. Estrutura de Rede Final e Diagnóstico
+
+```{r modelo_final}
+if (length(modelos_boot) > 0) {
+  boot_final <- modelos_boot[[length(modelos_boot)]]
+  uva_final  <- modelos_uva[[length(modelos_uva)]]
+  summary(boot_final)
+} else {
+  cat("Nenhum modelo final foi gerado devido a erro na primeira iteração.")
+}
+```
+
+# 4. Exportação do Relatório Detalhado para Excel (.xlsx)
+
+```{r exportar_excel}
+if (length(modelos_boot) > 0) {
+  extrair_removidos_com_texto <- function(boot_obj, num_rodada) {
+    estab_obj <- itemStability(boot_obj)
+    stab <- estab_obj$item.stability$empirical.dimensions
+    wc   <- boot_obj$EGA$wc
+    
+    removidos <- names(stab[stab < 0.75])
+    
+    if (length(removidos) > 0) {
+      indices_num <- as.numeric(gsub("\\D", "", removidos))
+      indices_num <- indices_num[!is.na(indices_num) & indices_num <= nrow(textos_originais)]
+      
+      return(data.frame(
+        Item = removidos,
+        Fase_Exclusao = paste0("Rodada ", num_rodada),
+        Dimensao_Original = as.numeric(wc[removidos]),
+        Estabilidade = round(as.numeric(stab[removidos]), 4),
+        Texto_Original = textos_originais$Construct_Response_Combinado[indices_num],
+        stringsAsFactors = FALSE
+      ))
+    } else {
+      return(NULL)
+    }
+  }
+
+  df_removidos_lista <- lapply(1:length(modelos_boot), function(i) {
+    extrair_removidos_com_texto(modelos_boot[[i]], i)
+  })
+
+  df_removidos_todos <- do.call(rbind, df_removidos_lista)
+
+  if (!is.null(df_removidos_todos) && nrow(df_removidos_todos) > 0) {
+    df_removidos_todos <- df_removidos_todos[order(df_removidos_todos$Dimensao_Original, df_removidos_todos$Fase_Exclusao), ]
+  }
+
+  estab_final <- itemStability(boot_final)$item.stability$empirical.dimensions
+  wc_final   <- boot_final$EGA$wc
+  indices_final_num <- as.numeric(gsub("\\D", "", names(estab_final)))
+  indices_final_num <- indices_final_num[!is.na(indices_final_num) & indices_final_num <= nrow(textos_originais)]
+
+  df_mantidos <- data.frame(
+    Item = names(estab_final),
+    Dimensao_Final = as.numeric(wc_final),
+    Estabilidade_Final = round(as.numeric(estab_final), 4),
+    Texto_Original = textos_originais$Construct_Response_Combinado[indices_final_num],
+    stringsAsFactors = FALSE
+  )
+  df_mantidos <- df_mantidos[order(df_mantidos$Dimensao_Final), ]
+
+  lista_abas <- list(
+    "Itens_Excluidos"         = df_removidos_todos,
+    "Estrutura_Final_Mantida" = df_mantidos
+  )
+
+  nome_excel <- paste0("Relatorio_EGA_", toupper(nome_modelo), "_Com_Textos.xlsx")
+  write_xlsx(lista_abas, path = "Relatorio_EGA_Com_Textos.xlsx") # Salva genérico
+  write_xlsx(lista_abas, path = nome_excel)                     # Salva nome do modelo
+
+  cat(paste0(" Arquivo '", nome_excel, "' gerado com sucesso!\n"))
+}
+```
+
+# 5. Conclusão
+
+A purificação iterativa para o modelo **`r toupper(params$modelo_nome)`** foi concluída com sucesso.
+
+```{r session_info}
+sessionInfo()
+```
