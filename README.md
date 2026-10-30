@@ -4,23 +4,45 @@ Reproducibility pipeline for the paper *"Evaluating the Evaluation of Music Gene
 
 ---
 
+## Literature Curation & Dataset Provenance
+
+The evaluation items analyzed in this framework were curated through a systematic review of the International Society for Music Information Retrieval (ISMIR) conference proceedings (2020–2025). The full curated dataset, including Zenodo DOIs, author metadata, abstracts, and evaluation excerpts, is available at [`data/raw/ismir_paper_curation.xlsx`](data/raw/ismir_paper_curation.xlsx).
+
+---
+
 ## Project Structure
 
 ```text
 music-gen-eval/
+├── archive/                                 # Historical versions and legacy runs (ignored in git)
+│   ├── v1/
+│   ├── v2/
+│   └── v3/
 ├── data/
-│   ├── questions_embeddings_openai.csv      # OpenAI embeddings (1536d)
-│   ├── questions_embeddings_mpnet.csv       # MPNet embeddings (768d)
-│   ├── questions_embeddings_minilm.csv      # MiniLM embeddings (384d)
-│   ├── super_embeddings_concatenados.csv    # Concatenated super-embeddings (2688d)
-│   ├── tabela_textos_itens.csv              # Item texts and IDs
-│   ├── rede_final_super_embedding.png       # Final EGA network plot
-│   ├── rede_final_network_only.png          # Network topology plot
-│   └── itens_finais.csv                     # Final purified items
+│   ├── raw/                                 # Raw input questions & item mapping
+│   │   ├── ismir_paper_curation.xlsx        # Curated ISMIR (2020-2025) papers
+│   │   ├── questions_no_duplicates.csv      # Deduplicated survey items
+│   │   └── item_texts.csv                   # Item ID to text mapping
+│   ├── embeddings/                          # Extracted vector embeddings
+│   │   ├── questions_embeddings_openai.csv   # OpenAI (1536d)
+│   │   ├── questions_embeddings_mpnet.csv    # MPNet (768d)
+│   │   ├── questions_embeddings_minilm.csv   # MiniLM (384d)
+│   │   └── super_embeddings_concatenated.csv # Concatenated (2688d)
+│   ├── results/                             # Final purified items tables (CSV)
+│   │   ├── purified_items_super_embedding.csv
+│   │   ├── purified_items_minilm.csv
+│   │   ├── purified_items_mpnet.csv
+│   │   └── purified_items_openai.csv
+│   ├── plots/                               # Network topology plots (PNG)
+│   │   ├── final_network_super_embedding.png
+│   │   ├── final_network_minilm.png
+│   │   ├── final_network_mpnet.png
+│   │   └── final_network_openai.png
+│   └── checkpoints/                         # bootEGA checkpoint files (*.rds)
 ├── src/
-│   ├── 01_gerar_embeddings.py               # Extract embeddings (OpenAI, MPNet, MiniLM)
-│   ├── 02_concatenar_embeddings.py          # Concatenate embeddings into super-embedding
-│   └── 03_analise_ega_final.R               # Iterative purification loop (UVA + bootEGA)
+│   ├── 01_generate_embeddings.py            # Extract embeddings (OpenAI, MPNet, MiniLM)
+│   ├── 02_concatenate_embeddings.py         # Concatenate embeddings into super-embedding
+│   └── 03_final_ega_analysis.R              # Iterative purification loop (UVA + bootEGA)
 ├── Dockerfile                               # Container definition (Ubuntu 24.04, R 4.3, Python 3.12)
 ├── docker-compose.yml                       # Compose orchestration with mounted volume
 ├── renv.lock                                # R package dependencies
@@ -74,9 +96,12 @@ Rscript -e "install.packages('renv', repos='https://cloud.r-project.org'); renv:
 #### 3. Run Pipeline
 
 ```bash
-# 1. Concatenate embeddings
-python src/02_concatenar_embeddings.py
+# 1. (Optional) Extract embeddings from raw questions
+python src/01_generate_embeddings.py
 
-# 2. Run EGA iterative purification
-Rscript src/03_analise_ega_final.R
+# 2. Concatenate embeddings into super-embedding
+python src/02_concatenate_embeddings.py
+
+# 3. Run EGA iterative item purification
+Rscript src/03_final_ega_analysis.R [super|minilm|mpnet|openai]
 ```

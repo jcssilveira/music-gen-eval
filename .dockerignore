@@ -12,4 +12,6 @@ renv/local
 .vscode
 .idea
 Rplots.pdf
-data/rede_final_super_embedding.png
+archive
+data/archive
+data/checkpoints

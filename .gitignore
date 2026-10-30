@@ -15,20 +15,30 @@ build/
 Rplots.pdf
 .Renviron
 
-# renv (ignora os pacotes baixados na biblioteca local, mas mantém a infraestrutura e renv.lock)
+# renv package cache
 renv/library/
 renv/sandbox/
 renv/staging/
 renv/local/
 renv/cellar/
 
-# IDE & Editor
+# IDEs & Editors
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
+# OS artifacts
 .DS_Store
 Thumbs.db
+
+# Archives & Legacy runs
+archive/
+data/archive/
+
+# Runtime checkpoints
+data/checkpoints/
+checkpoint_purificacao_*.rds
+checkpoint_*.rds
+*.rds

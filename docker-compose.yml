@@ -4,7 +4,7 @@ services:
     image: music-gen-eval:latest
     container_name: music-gen-eval
     volumes:
-      # Sincroniza a pasta data para que arquivos gerados fiquem salvos no host
+      # Mount host data directory for persistent outputs
       - ./data:/app/data
     environment:
       - LANG=C.UTF-8
