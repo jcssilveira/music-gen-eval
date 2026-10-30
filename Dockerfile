@@ -44,4 +44,4 @@ RUN R -e 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux
 COPY . /app/
 
 # Default pipeline entrypoint
-CMD ["bash", "-c", "python3 src/02_concatenate_embeddings.py && Rscript src/03_final_ega_analysis.R"]
+CMD ["bash", "-c", "python3 src/04_concatenate_embeddings.py && Rscript src/05_final_ega_analysis.R"]

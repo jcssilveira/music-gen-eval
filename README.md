@@ -21,6 +21,8 @@ music-gen-eval/
 ├── data/
 │   ├── raw/                                 # Raw input questions & item mapping
 │   │   ├── ismir_paper_curation.xlsx        # Curated ISMIR (2020-2025) papers
+│   │   ├── eval_excerpt.csv                 # Raw evaluation excerpts from ISMIR papers
+│   │   ├── extracted_evaluation_items.csv   # LLM-extracted psychometric evaluation items
 │   │   ├── questions_no_duplicates.csv      # Deduplicated survey items
 │   │   └── item_texts.csv                   # Item ID to text mapping
 │   ├── embeddings/                          # Extracted vector embeddings
@@ -40,9 +42,11 @@ music-gen-eval/
 │   │   └── final_network_openai.png
 │   └── checkpoints/                         # bootEGA checkpoint files (*.rds)
 ├── src/
-│   ├── 01_generate_embeddings.py            # Extract embeddings (OpenAI, MPNet, MiniLM)
-│   ├── 02_concatenate_embeddings.py         # Concatenate embeddings into super-embedding
-│   └── 03_final_ega_analysis.R              # Iterative purification loop (UVA + bootEGA)
+│   ├── 01_extract_items.py                  # LLM extraction of evaluation items from paper excerpts
+│   ├── 02_export_questions.py               # Filter and export atomic questions to CSV
+│   ├── 03_generate_embeddings.py            # Extract embeddings (OpenAI, MPNet, MiniLM)
+│   ├── 04_concatenate_embeddings.py         # Concatenate embeddings into super-embedding
+│   └── 05_final_ega_analysis.R              # Iterative purification loop (UVA + bootEGA)
 ├── Dockerfile                               # Container definition (Ubuntu 24.04, R 4.3, Python 3.12)
 ├── docker-compose.yml                       # Compose orchestration with mounted volume
 ├── renv.lock                                # R package dependencies
@@ -96,12 +100,19 @@ Rscript -e "install.packages('renv', repos='https://cloud.r-project.org'); renv:
 #### 3. Run Pipeline
 
 ```bash
-# 1. (Optional) Extract embeddings from raw questions
-python src/01_generate_embeddings.py
+# 1. (Optional) Extract psychometric items from ISMIR paper excerpts using LLM
+export OPENAI_API_KEY="your-api-key"
+uv run python src/01_extract_items.py
 
-# 2. Concatenate embeddings into super-embedding
-python src/02_concatenate_embeddings.py
+# 2. Filter and export atomic questions/constructs
+uv run python src/02_export_questions.py
 
-# 3. Run EGA iterative item purification
-Rscript src/03_final_ega_analysis.R [super|minilm|mpnet|openai]
+# 3. Extract embeddings from questions (OpenAI, MPNet, MiniLM)
+uv run python src/03_generate_embeddings.py
+
+# 4. Concatenate embeddings into super-embedding (2688d)
+uv run python src/04_concatenate_embeddings.py
+
+# 5. Run EGA iterative item purification
+Rscript src/05_final_ega_analysis.R [super|minilm|mpnet|openai]
 ```

@@ -26,7 +26,7 @@ library(EGAnet)
 library(ggplot2)
 
 # Execution parameters and model resolution
-# Usage: Rscript src/03_final_ega_analysis.R [super|minilm|mpnet|openai]
+# Usage: Rscript src/05_final_ega_analysis.R [super|minilm|mpnet|openai]
 args <- commandArgs(trailingOnly = TRUE)
 model_arg <- if (length(args) > 0) tolower(trimws(args[1])) else "super"
 
@@ -73,13 +73,11 @@ input_data_path <- if (file.exists(file.path(embeddings_dir, data_file))) {
   stop(sprintf("Embeddings file not found: %s", data_file))
 }
 
-# Resolve item text mapping path (check raw/item_texts.csv, with fallback)
+# Resolve item text mapping path (data/raw/item_texts.csv)
 texts_path <- if (file.exists(file.path(raw_dir, "item_texts.csv"))) {
   file.path(raw_dir, "item_texts.csv")
-} else if (file.exists(file.path(raw_dir, "tabela_textos_itens.csv"))) {
-  file.path(raw_dir, "tabela_textos_itens.csv")
 } else {
-  file.path(base_dir, "item_texts.csv")
+  file.path(base_dir, "data", "raw", "item_texts.csv")
 }
 
 # Output file paths

@@ -1,0 +1,148 @@
+Does this melody have complete structure with repetitions and variations?
+Can you figure out the musical theme?
+Is the melody similarly melodious as human compositions?
+Is the overall quality of the melody the same as human compositions?
+Does the music piece have diversity?
+Does the music piece have interestingness?
+Does the music piece sound like it was composed by an expressive human musician?
+Does the music piece contain perceived mistakes in composition?
+Does the music piece contain perceived mistakes in performance?
+Does the music piece exhibit structural patterns such as repeating themes or the development of musical ideas?
+What is the general score of the music piece?
+how well the melody reduction preserves the original music information
+how well the melody reduction fits the underlying chord progression
+the overall music quality of the melody reduction
+the significant occurrence of harmonic dissonance
+the significant occurrence of melodic incoherence
+the occurrence of coherent but counter-intuitive melodic sequences
+the occurrence of coherent but counter-intuitive harmonic sequences
+the appropriateness of the scale for each instrument
+the appropriateness of the range for each instrument
+the proper use of unique characteristics specific to each instrument
+the proper use of ornamentations specific to each instrument
+the suitability of the rhythmic structure of strong and weak beats
+the harmony among the instruments when performed together as an ensemble
+the coherence among the instruments when performed together as an ensemble
+whether the drummer follows a steady tempo
+if each sample improved on the input
+whether the sample contains drum sounds
+whether the sample can be played repeatedly in a seamless manner
+whether the sample is free of unpleasant noises
+whether the sample is free of artifacts
+how much you like it
+do the pitches of notes go in the right tonality?
+do the pitches of notes connect the contexts fluently?
+are the notes played on the right beats?
+how is the generated part of the music similar to its contexts?
+how much do they like the music?
+how cinematic the AI-generated music sounds
+the compatibility of the music with the emotional tone of the movie clip
+subjective assessment of the audio quality
+How much sense do the lyrics make?
+How natural is the Japanese used in the lyrics?
+How well is the meaning of the original lyrics preserved?
+How singable are the generated lyrics?
+How well are the lyrics and melody aligned?
+What is the overall quality of the generated Japanese singing?
+Do you feel that the generated audio matches what the text prompt asks for?
+Do you feel that the generated audio faithfully keeps the original musical content that should not be changed by the text prompt?
+"Overall, how much do you like the generated audio?"
+rank each set of examples based on perceived audio quality
+rank each set of examples based on the presence of artifacts
+Participants rank how well the generated output aligns harmonically with the chord conditioning extracted from the multitrack recording.
+Does the generated music sound pleasing overall?
+Whether the generated music give you the same feeling as the real music?
+Does the generated music have new arrangement that impresses you?
+how much the sample sounds like the loop music (which can be repeated seamlessly)
+How well do the melody and chords stay in harmony with each other
+How creative the harmonization is
+The overall musicality
+How creative the accompaniment is
+The overall musicality of the accompaniment
+is the timing of notes suitable for the lyrics?
+do the pitches fit the chords?
+do the pitches fit the key?
+does the melody line sound natural with the lyrics?
+what is the overall quality of the melody?
+"how many wrong notes are there?"
+"Are there notes played at the wrong time?"
+"how much the subject is impressed?"
+"Participants are asked to select the version that more closely resembles the reference in terms of timbre."
+"Participants are asked to select the version that more closely resembles the reference in terms of phrasing."
+"Participants are asked to select the version that more closely resembles the reference in terms of expressiveness."
+"Indicate your preference based on the naturalness of the synthesised audio for the same performance MIDI."
+"Indicate your preference based on the clarity of the synthesised audio for the same performance MIDI."
+"Indicate your preference based on the expressiveness of the synthesised audio for the same performance MIDI."
+The melody and accompaniment were musically coherent.
+How exciting (arousal) do you perceive the music to be?
+How negative or positive (valence) do you perceive the music to be?
+How well they preserve the target musical content
+How well they present the instruments’ tone colors (timbre) of the target piece
+how clean they are
+how distortion-free they are
+Meeting Essentials level guidelines
+Preserving musical content
+Correctly assigning hands according to allowed hand positions
+Avoiding syntactic style errors such as crossover voices
+Maintaining structure: avoiding missing bars
+Maintaining structure: avoiding extra bars
+the naturalness of transitions
+the variety of harmony
+the variety of rhythm
+the lack of errors in composition
+If the accompaniment matches the lead melody in harmony
+If the accompaniment matches the lead melody in texture
+If the accompaniment flows dynamically with the structure of the melody
+Overall musicality of accompaniment
+How would you rate the overall quality of this excerpt?
+"Without considering audio quality, how similar are these two excerpts in terms of style?"
+"Without considering audio quality, how likely do you think these two excerpts are from the same song?"
+"to what extent the chords fit the melody, with an emphasis on the correctness of chords with regards to the local context"
+How effectively the audio captures key musical qualities.
+The degree of alignment between the generated music and the provided textual prompt.
+The extent to which the music corresponds with the video content in terms of tempo
+The extent to which the music corresponds with the video content in terms of emotional expression
+The uniqueness of the generated audio
+The innovativeness of the generated audio
+How much do the participants like the piano cover in the personal overall listening experience?
+evaluate the similarity to human-composed music
+evaluate the conformity to the typical electronic music style
+based on boundary clearness
+based on transition smoothness
+based on phrase alignment
+for how well each section aligns with the given structure
+for how creative the music is
+for how humanlike the music sounds
+for the overall music quality
+"Select the recording that sounds like a higher-quality <source>. The higher-quality recording is the one that is more natural sounding, or has fewer audio artifacts (e.g., noise, clicks, or other instruments)."
+Does it sound good as music?
+Does it respect and follow the input condition?
+"Given the input conditions, is it creative in its musical decisions?"
+To what extent does the model understand and follow the instructions?
+To what extent does the model correctly answer the question?
+To what extent does the model reason like human beings?
+To what extent does the model contain the conditions?
+Select which of the two choices is a more musically pleasing translation from the reference clip to drums that captures the original rhythm and groove of the reference clip.
+how much they like the melody of the two songs
+how similar are the two songs’ melodies
+which music is better in terms of musicality
+which music is better in terms of naturalness
+which music is better in terms of creativity
+How accurately does the generated music follow the given editing instruction?
+How does the overall audio quality of the generated music compare to the original music?
+Does it sound good overall?
+Can you remember a certain part or the melody?
+Does it involve recurring music ideas?
+Does it involve clear phrases?
+Does it involve coherent sections?
+Is the music diverse?
+Is the music interesting?
+This composition features the qualities of the progressive metal genre.
+This composition features the qualities of the rock genre.
+I like this composition.
+This composition is creative.
+This composition is consistent.
+This composition is playable.
+This composition was generated using AI.
+This composition is repetitive.
+audio quality compared to the reference

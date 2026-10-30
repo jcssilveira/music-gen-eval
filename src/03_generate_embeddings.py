@@ -1,4 +1,5 @@
 import os
+import argparse
 import warnings
 import logging
 from pathlib import Path
@@ -89,17 +90,28 @@ def extract_local_embeddings(texts: list[str], model_name: str, output_filename:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Extract embeddings from evaluation items/questions.")
+    parser.add_argument(
+        "--input",
+        type=Path,
+        default=None,
+        help="Path to input questions file (default: data/raw/questions_no_duplicates.csv)"
+    )
+    args = parser.parse_args()
+
     print("=" * 60)
     print("AI-GENIE Embeddings Extraction Pipeline")
     print("=" * 60)
 
     # Locate input questions file
-    questions_file = RAW_DIR / "questions_no_duplicates.csv"
-    if not questions_file.is_file():
-        questions_file = DATA_DIR / "questions_no_duplicates.csv"
-    if not questions_file.is_file():
-        questions_file = DATA_DIR / "perguntas_originais.csv"
+    if args.input:
+        questions_file = Path(args.input)
+    elif (RAW_DIR / "questions_only.csv").is_file():
+        questions_file = RAW_DIR / "questions_only.csv"
+    else:
+        raise FileNotFoundError(f"Questions file not found: {RAW_DIR / 'questions_only.csv'}")
 
+    print(f"-> Using questions file: {questions_file}")
     questions = load_questions(questions_file)
     print(f"\nLoaded {len(questions)} items ready for vectorization.\n")
 
